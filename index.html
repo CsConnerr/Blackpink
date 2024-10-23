@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BLACKPINK Solo Song Sorter!</title>
+    <title>BLACKPINK Solo Song Sorter</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -29,7 +29,7 @@
 </head>
 <body>
 
-    <h1>BLACKPINK Solo Song Sorter!</h1>
+    <h1>BLACKPINK Solo Song Sorter</h1>
     <div id="battle">
         <p>Pick which song you like better:</p>
         <button id="leftSong" onclick="chooseSong('left')"></button>
@@ -56,70 +56,66 @@
             'Mantra - Jennie'
         ];
 
-        let rankings = [];
-        let currentBattle = [];
-        let mergeSortQueue = [];
+        let rankedSongs = [];
+        let currentPair = [];
+        let pendingPairs = [];
 
-        function mergeSortSongs(songList) {
-            if (songList.length <= 1) return songList;
-
-            const mid = Math.floor(songList.length / 2);
-            const left = songList.slice(0, mid);
-            const right = songList.slice(mid);
-
-            // Divide and conquer
-            return merge(mergeSortSongs(left), mergeSortSongs(right));
-        }
-
-        function merge(left, right) {
-            let result = [];
-
-            while (left.length && right.length) {
-                mergeSortQueue.push([left[0], right[0]]);
-                result.push(null); // Placeholder for merged result
+        // Prepare the list of all possible song comparisons
+        function generatePairs() {
+            for (let i = 0; i < songs.length; i++) {
+                for (let j = i + 1; j < songs.length; j++) {
+                    pendingPairs.push([songs[i], songs[j]]);
+                }
             }
-
-            // Add remaining elements from left or right to the result array
-            return result.concat(left).concat(right);
         }
 
+        // Initialize the sorter
         function startSort() {
-            rankings = mergeSortSongs(songs);
-            currentBattle = mergeSortQueue.shift();
+            generatePairs();
+            currentPair = pendingPairs.shift(); // Get the first pair
             displayBattle();
         }
 
+        // Display the current song pair to compare
         function displayBattle() {
-            if (currentBattle) {
-                document.getElementById('leftSong').innerText = currentBattle[0];
-                document.getElementById('rightSong').innerText = currentBattle[1];
+            if (currentPair) {
+                document.getElementById('leftSong').innerText = currentPair[0];
+                document.getElementById('rightSong').innerText = currentPair[1];
             } else {
                 displayRankings();
             }
         }
 
+        // Handle user's choice and update ranking logic
         function chooseSong(choice) {
-            const winner = choice === 'left' ? currentBattle[0] : currentBattle[1];
-            const loser = choice === 'left' ? currentBattle[1] : currentBattle[0];
+            const winner = choice === 'left' ? currentPair[0] : currentPair[1];
+            const loser = choice === 'left' ? currentPair[1] : currentPair[0];
 
-            // Find where the null is in rankings, replace it with winner or loser
-            const winnerIndex = rankings.indexOf(null);
-            if (winnerIndex !== -1) {
-                rankings[winnerIndex] = winner;
-            }
-            const loserIndex = rankings.indexOf(null);
-            if (loserIndex !== -1) {
-                rankings[loserIndex] = loser;
+            // Insert winner at the correct position
+            const winnerIndex = rankedSongs.indexOf(winner);
+            const loserIndex = rankedSongs.indexOf(loser);
+
+            if (winnerIndex === -1 && loserIndex === -1) {
+                rankedSongs.push(winner, loser);
+            } else if (winnerIndex === -1) {
+                rankedSongs.splice(loserIndex, 0, winner);
+            } else if (loserIndex === -1) {
+                rankedSongs.splice(winnerIndex + 1, 0, loser);
+            } else if (winnerIndex > loserIndex) {
+                // Move winner to correct place relative to the loser
+                rankedSongs.splice(winnerIndex, 1);
+                rankedSongs.splice(loserIndex, 0, winner);
             }
 
-            // Move to the next comparison
-            currentBattle = mergeSortQueue.shift();
+            // Move to the next pair of songs
+            currentPair = pendingPairs.shift();
             displayBattle();
         }
 
+        // Display final rankings once all comparisons are done
         function displayRankings() {
             let rankedList = '<h2>Your Ranked List of BLACKPINK Solo Songs:</h2><ol>';
-            rankings.forEach(song => {
+            rankedSongs.forEach(song => {
                 rankedList += `<li>${song}</li>`;
             });
             rankedList += '</ol>';
