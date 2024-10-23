@@ -3,130 +3,303 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BLACKPINK Solo Song Sorter!!</title>
+    <title>BLACKPINK Solo Song Sorter</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
     <style>
+        :root {
+            --pink: #ff1493;
+            --black: #000000;
+            --white: #ffffff;
+            --gray: #222222;
+        }
+
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background-color: var(--black);
+            color: var(--white);
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container {
+            max-width: 800px;
+            width: 90%;
+            margin: 2rem auto;
+            padding: 2rem;
+        }
+
+        h1 {
+            color: var(--white);
+            font-size: 2rem;
+            margin-bottom: 2rem;
             text-align: center;
-            background-color: #f4f4f4;
-            margin-top: 50px;
         }
-        button {
-            padding: 10px 20px;
-            background-color: #ff4081;
-            color: white;
-            border: none;
-            margin: 20px;
+
+        .progress-bar {
+            width: 100%;
+            height: 4px;
+            background-color: var(--gray);
+            margin: 1rem 0 2rem 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background-color: var(--pink);
+            transition: width 0.3s ease;
+        }
+
+        .battle-container {
+            display: flex;
+            gap: 2rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .song-card {
+            background: var(--gray);
+            padding: 1.5rem;
+            border-radius: 4px;
+            width: 280px;
             cursor: pointer;
+            transition: transform 0.2s ease, background-color 0.2s ease;
         }
-        button:hover {
-            background-color: #e91e63;
+
+        .song-card:hover {
+            background: #333333;
+            transform: translateY(-5px);
         }
-        #rankedList {
-            margin-top: 30px;
+
+        .song-title {
+            font-size: 1.1rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+            color: var(--pink);
+        }
+
+        .artist {
+            color: var(--white);
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .rankings {
+            width: 100%;
+            max-width: 600px;
+            margin: 2rem auto;
+        }
+
+        .ranking-item {
+            background: var(--gray);
+            margin: 0.5rem 0;
+            padding: 1rem;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            opacity: 0;
+            animation: slideIn 0.5s ease forwards;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .rank {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--pink);
+            margin-right: 1rem;
+            min-width: 30px;
+        }
+
+        .question {
+            text-align: center;
+            margin-bottom: 1rem;
+            opacity: 0.9;
+        }
+
+        .animate__animated {
+            animation-duration: 0.5s;
         }
     </style>
 </head>
 <body>
+    <div class="container">
+        <h1 class="animate__animated animate__fadeIn">BLACKPINK Solo Song Sorter</h1>
+        
+        <div id="progress" class="progress-bar animate__animated animate__fadeIn">
+            <div class="progress-fill" style="width: 0%"></div>
+        </div>
 
-    <h1>BLACKPINK Solo Song Sorter</h1>
-    <div id="battle">
-        <p>Pick which song you like better:</p>
-        <button id="leftSong" onclick="chooseSong('left')"></button>
-        <button id="rightSong" onclick="chooseSong('right')"></button>
+        <div class="question animate__animated animate__fadeIn">Which song do you prefer?</div>
+
+        <div id="battle" class="battle-container">
+            <div id="leftSong" class="song-card animate__animated animate__fadeInLeft" onclick="chooseSong('left')">
+                <div class="song-title"></div>
+                <div class="artist"></div>
+            </div>
+            <div id="rightSong" class="song-card animate__animated animate__fadeInRight" onclick="chooseSong('right')">
+                <div class="song-title"></div>
+                <div class="artist"></div>
+            </div>
+        </div>
+
+        <div id="rankings" class="rankings" style="display: none"></div>
     </div>
-
-    <div id="rankedList"></div>
 
     <script>
         const songs = [
-            'SOLO - Jennie',
-            'On The Ground - Rosé',
-            'Gone - Rosé',
-            'Lalisa - Lisa',
-            'Money - Lisa',
-            'You & Me - Jennie',
-            'You & Me (Coachella version) - Jennie',
-            'FLOWER - Jisoo',
-            'All Eyes on Me - Jisoo',
-            'Rockstar - Lisa',
-            'Moonlit Floor - Lisa',
-            'New Woman - Lisa',
-            'APT - Rosé',
-            'Mantra - Jennie'
+            { title: 'SOLO', artist: 'Jennie' },
+            { title: 'On The Ground', artist: 'Rosé' },
+            { title: 'Gone', artist: 'Rosé' },
+            { title: 'Lalisa', artist: 'Lisa' },
+            { title: 'Money', artist: 'Lisa' },
+            { title: 'You & Me', artist: 'Jennie' },
+            { title: 'You & Me (Coachella version)', artist: 'Jennie' },
+            { title: 'FLOWER', artist: 'Jisoo' },
+            { title: 'All Eyes on Me', artist: 'Jisoo' },
+            { title: 'Rockstar', artist: 'Lisa' },
+            { title: 'Moonlit Floor', artist: 'Lisa' },
+            { title: 'New Woman', artist: 'Lisa' },
+            { title: 'APT', artist: 'Rosé' },
+            { title: 'Mantra', artist: 'Jennie' }
         ];
 
-        let rankedSongs = [];
-        let currentPair = [];
-        let pendingPairs = [];
+        class SongSorter {
+            constructor(songs) {
+                this.songs = songs.map(song => ({
+                    ...song,
+                    score: 0,
+                    comparisons: new Set()
+                }));
+                this.currentIndex = 0;
+                this.remainingComparisons = this.generateComparisons();
+            }
 
-        // Prepare the list of all possible song comparisons
-        function generatePairs() {
-            for (let i = 0; i < songs.length; i++) {
-                for (let j = i + 1; j < songs.length; j++) {
-                    pendingPairs.push([songs[i], songs[j]]);
+            generateComparisons() {
+                const comparisons = [];
+                for (let i = 0; i < this.songs.length - 1; i++) {
+                    for (let j = i + 1; j < this.songs.length; j++) {
+                        comparisons.push([i, j]);
+                    }
                 }
+                // Shuffle comparisons
+                for (let i = comparisons.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [comparisons[i], comparisons[j]] = [comparisons[j], comparisons[i]];
+                }
+                return comparisons;
+            }
+
+            getCurrentPair() {
+                if (this.remainingComparisons.length === 0) return null;
+                const [i, j] = this.remainingComparisons[0];
+                return [this.songs[i], this.songs[j]];
+            }
+
+            recordChoice(winner, loser) {
+                winner.score += 1;
+                const [i, j] = this.remainingComparisons.shift();
+                winner.comparisons.add(loser.title);
+                loser.comparisons.add(winner.title);
+                return this.remainingComparisons.length === 0;
+            }
+
+            getRankings() {
+                return [...this.songs].sort((a, b) => b.score - a.score);
+            }
+
+            getProgress() {
+                const totalComparisons = (this.songs.length * (this.songs.length - 1)) / 2;
+                const completedComparisons = totalComparisons - this.remainingComparisons.length;
+                return (completedComparisons / totalComparisons) * 100;
             }
         }
 
-        // Initialize the sorter
-        function startSort() {
-            generatePairs();
-            currentPair = pendingPairs.shift(); // Get the first pair
-            displayBattle();
+        let sorter = new SongSorter(songs);
+
+        function updateDisplay() {
+            const pair = sorter.getCurrentPair();
+            if (!pair) return;
+
+            // Hide cards first
+            const leftCard = document.getElementById('leftSong');
+            const rightCard = document.getElementById('rightSong');
+            leftCard.style.display = 'none';
+            rightCard.style.display = 'none';
+
+            // Update content
+            const [left, right] = pair;
+            document.querySelector('#leftSong .song-title').textContent = left.title;
+            document.querySelector('#leftSong .artist').textContent = left.artist;
+            document.querySelector('#rightSong .song-title').textContent = right.title;
+            document.querySelector('#rightSong .artist').textContent = right.artist;
+
+            // Show cards with animation
+            setTimeout(() => {
+                leftCard.style.display = 'block';
+                rightCard.style.display = 'block';
+                leftCard.classList.remove('animate__fadeInLeft');
+                rightCard.classList.remove('animate__fadeInRight');
+                void leftCard.offsetWidth; // Trigger reflow
+                void rightCard.offsetWidth;
+                leftCard.classList.add('animate__fadeInLeft');
+                rightCard.classList.add('animate__fadeInRight');
+            }, 50);
+
+            document.querySelector('.progress-fill').style.width = `${sorter.getProgress()}%`;
         }
 
-        // Display the current song pair to compare
-        function displayBattle() {
-            if (currentPair) {
-                document.getElementById('leftSong').innerText = currentPair[0];
-                document.getElementById('rightSong').innerText = currentPair[1];
-            } else {
-                displayRankings();
-            }
-        }
-
-        // Handle user's choice and update ranking logic
         function chooseSong(choice) {
-            const winner = choice === 'left' ? currentPair[0] : currentPair[1];
-            const loser = choice === 'left' ? currentPair[1] : currentPair[0];
+            const pair = sorter.getCurrentPair();
+            if (!pair) return;
 
-            // Insert winner at the correct position
-            const winnerIndex = rankedSongs.indexOf(winner);
-            const loserIndex = rankedSongs.indexOf(loser);
+            const winner = choice === 'left' ? pair[0] : pair[1];
+            const loser = choice === 'left' ? pair[1] : pair[0];
 
-            if (winnerIndex === -1 && loserIndex === -1) {
-                rankedSongs.push(winner, loser);
-            } else if (winnerIndex === -1) {
-                rankedSongs.splice(loserIndex, 0, winner);
-            } else if (loserIndex === -1) {
-                rankedSongs.splice(winnerIndex + 1, 0, loser);
-            } else if (winnerIndex > loserIndex) {
-                // Move winner to correct place relative to the loser
-                rankedSongs.splice(winnerIndex, 1);
-                rankedSongs.splice(loserIndex, 0, winner);
+            const isComplete = sorter.recordChoice(winner, loser);
+
+            if (isComplete) {
+                displayRankings();
+            } else {
+                updateDisplay();
             }
-
-            // Move to the next pair of songs
-            currentPair = pendingPairs.shift();
-            displayBattle();
         }
 
-        // Display final rankings once all comparisons are done
         function displayRankings() {
-            let rankedList = '<h2>Your Ranked List of BLACKPINK Solo Songs:</h2><ol>';
-            rankedSongs.forEach(song => {
-                rankedList += `<li>${song}</li>`;
-            });
-            rankedList += '</ol>';
+            document.getElementById('battle').style.display = 'none';
+            document.getElementById('progress').style.display = 'none';
+            document.querySelector('.question').style.display = 'none';
 
-            document.getElementById('battle').style.display = 'none'; // Hide the battle section
-            document.getElementById('rankedList').innerHTML = rankedList; // Display the ranked list
+            const rankings = sorter.getRankings();
+            const rankingsHtml = rankings.map((song, index) => `
+                <div class="ranking-item" style="animation-delay: ${index * 0.1}s">
+                    <span class="rank">#${index + 1}</span>
+                    <div>
+                        <div class="song-title">${song.title}</div>
+                        <div class="artist">${song.artist}</div>
+                    </div>
+                </div>
+            `).join('');
+
+            const rankingsElement = document.getElementById('rankings');
+            rankingsElement.innerHTML = `
+                <h2 class="animate__animated animate__fadeIn" style="text-align: center; margin-bottom: 2rem;">Your Ranking</h2>
+                ${rankingsHtml}
+            `;
+            rankingsElement.style.display = 'block';
         }
 
-        // Initialize the sorting process when the page loads
-        window.onload = startSort;
+        window.onload = updateDisplay;
     </script>
-
 </body>
 </html>
