@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BLACKPINK Solo Song Sorter</title>
+    <title>BLACKPINK Solo Sorter</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -57,55 +57,64 @@
         ];
 
         let rankings = [];
-        let battles = [];
-        let currentBattle = 0;
+        let currentBattle = [];
+        let mergeSortQueue = [];
 
-        function initializeBattles() {
-            // Generate all possible pairings (battles) of the songs
-            for (let i = 0; i < songs.length; i++) {
-                for (let j = i + 1; j < songs.length; j++) {
-                    battles.push([songs[i], songs[j]]);
-                }
+        function mergeSortSongs(songList) {
+            if (songList.length <= 1) return songList;
+
+            const mid = Math.floor(songList.length / 2);
+            const left = songList.slice(0, mid);
+            const right = songList.slice(mid);
+
+            // Divide and conquer
+            return merge(mergeSortSongs(left), mergeSortSongs(right));
+        }
+
+        function merge(left, right) {
+            let result = [];
+
+            while (left.length && right.length) {
+                mergeSortQueue.push([left[0], right[0]]);
+                result.push(null); // Placeholder for merged result
             }
-            shuffleArray(battles); // Shuffle battles to make the comparison order random
+
+            // Add remaining elements from left or right to the result array
+            return result.concat(left).concat(right);
+        }
+
+        function startSort() {
+            rankings = mergeSortSongs(songs);
+            currentBattle = mergeSortQueue.shift();
             displayBattle();
         }
 
         function displayBattle() {
-            if (currentBattle < battles.length) {
-                document.getElementById('leftSong').innerText = battles[currentBattle][0];
-                document.getElementById('rightSong').innerText = battles[currentBattle][1];
+            if (currentBattle) {
+                document.getElementById('leftSong').innerText = currentBattle[0];
+                document.getElementById('rightSong').innerText = currentBattle[1];
             } else {
-                // No more battles; display the final rankings
                 displayRankings();
             }
         }
 
         function chooseSong(choice) {
-            const winner = choice === 'left' ? battles[currentBattle][0] : battles[currentBattle][1];
-            const loser = choice === 'left' ? battles[currentBattle][1] : battles[currentBattle][0];
+            const winner = choice === 'left' ? currentBattle[0] : currentBattle[1];
+            const loser = choice === 'left' ? currentBattle[1] : currentBattle[0];
 
-            // Update rankings based on the user's choice
-            updateRankings(winner, loser);
-
-            // Move to the next battle
-            currentBattle++;
-            displayBattle();
-        }
-
-        function updateRankings(winner, loser) {
-            // Add the winner and loser to the rankings if they aren't already there
-            if (!rankings.includes(winner)) rankings.push(winner);
-            if (!rankings.includes(loser)) rankings.push(loser);
-
-            // Ensure that the winner comes before the loser in the rankings
-            const winnerIndex = rankings.indexOf(winner);
-            const loserIndex = rankings.indexOf(loser);
-
-            if (winnerIndex > loserIndex) {
-                rankings.splice(winnerIndex, 1);
-                rankings.splice(loserIndex, 0, winner);
+            // Find where the null is in rankings, replace it with winner or loser
+            const winnerIndex = rankings.indexOf(null);
+            if (winnerIndex !== -1) {
+                rankings[winnerIndex] = winner;
             }
+            const loserIndex = rankings.indexOf(null);
+            if (loserIndex !== -1) {
+                rankings[loserIndex] = loser;
+            }
+
+            // Move to the next comparison
+            currentBattle = mergeSortQueue.shift();
+            displayBattle();
         }
 
         function displayRankings() {
@@ -119,15 +128,8 @@
             document.getElementById('rankedList').innerHTML = rankedList; // Display the ranked list
         }
 
-        function shuffleArray(array) {
-            for (let i = array.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [array[i], array[j]] = [array[j], array[i]];
-            }
-        }
-
-        // Initialize the battles when the page loads
-        window.onload = initializeBattles;
+        // Initialize the sorting process when the page loads
+        window.onload = startSort;
     </script>
 
 </body>
